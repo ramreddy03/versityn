@@ -1,0 +1,48 @@
+ALTER TABLE `shared_doc_students` ADD `filename` VARCHAR(250) NULL DEFAULT NULL AFTER `shared_id`, ADD `randname` VARCHAR(250) NULL DEFAULT NULL AFTER `filename`, ADD `filetype` VARCHAR(250) NULL DEFAULT NULL AFTER `randname`;
+
+public function friendsshareddoc()
+  {
+    $id              = !empty($_POST['id']) ? $_POST['id'] : '';
+    $friendsid      = !empty($_POST['friendsid']) ? $_POST['friendsid'] : '';
+    $qry = $this->db->get_where('students', array('id' => $id))->row();
+    $image = $qry->randname;
+    			$uploads_dir = 'uploads';
+				//old file data
+				$old_folder = $this->sessiondata['username'];
+				$old_upload_path = './'.$uploads_dir.'/'.$old_folder.'/';
+				$old_file =  $old_upload_path.$image;
+				$ext = pathinfo($old_file, PATHINFO_EXTENSION);                
+				//new file
+				$foldername = $this->studentUserName($friendsid); 
+				$uploadpath = './'.$uploads_dir.'/'.$foldername.'/';
+				//Check directory available or not. if not create one with 0777 permissions 
+				if (!file_exists($uploadpath)) {
+					mkdir($uploadpath, 0777, TRUE);
+				}
+				$newfile_name = $foldername.(rand());
+				$newfile = $uploadpath.md5($newfile_name).".".$ext;
+
+    $activity_table  = "shared_doc_students";
+    $insert_activity = array(
+		      'stu_id' => $friendsid,
+		      'login_id' => $this->sessiondata['userid'],
+		      'shared_id' => $id,
+		      'randname'  => $newfile,
+		      'filename' => $qry->filename,
+		      'filetype'	=> $qry->filetype,
+			  'satus' => 1,
+			  'addedon' => date('Y-m-d H:i:s'),
+    );
+    $insertid        = $this->commonclass->insert_record($activity_table, $insert_activity);
+    return 1;
+    exit;
+  }
+
+  <style type="text/css">
+	.dropzone {
+		color: #597acc;
+		border: 2px dashed #597acc !important;
+		font-family: monospace;
+		font-size: 20px; font-weight: 700;
+	}
+</style>
